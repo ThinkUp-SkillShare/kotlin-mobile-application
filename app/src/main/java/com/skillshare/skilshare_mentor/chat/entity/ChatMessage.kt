@@ -1,4 +1,3 @@
-// app/src/main/java/com/skillshare/skilshare_mentor/chat/entity/ChatMessage.kt
 package com.skillshare.skilshare_mentor.chat.entity
 
 import androidx.compose.ui.graphics.vector.ImageVector

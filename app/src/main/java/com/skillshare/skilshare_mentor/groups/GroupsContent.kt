@@ -526,7 +526,7 @@ fun EmptyGroupsState(
         )
         Spacer(modifier = Modifier.height(24.dp))
         Button(
-            onClick = { /* Create new group */ },
+            onClick = {  },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = PrimaryColor

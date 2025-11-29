@@ -40,35 +40,27 @@ android {
 }
 
 dependencies {
-    // Compose BOM
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
 
-    // Material Design 3
     implementation("androidx.compose.material3:material3")
 
-    // ViewModel para Compose (AGREGAR ESTA)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
-    // Navigation (AGREGAR ESTA si usas Navigation Component)
     implementation("androidx.navigation:navigation-compose:2.7.6")
 
-    // Android Studio Preview support
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    implementation("androidx.compose.material:material-icons-extended:1.6.0") // Actualizada
-    implementation("io.coil-kt:coil-compose:2.5.0") // Actualizada
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
-    // Para selección de archivos
-    implementation("com.google.accompanist:accompanist-permissions:0.32.0") // Actualizada
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 
-    // Para manejo de URIs y archivos
     implementation("androidx.documentfile:documentfile:1.0.1")
 
-    // Coroutines (AGREGAR ESTA)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     implementation(libs.androidx.core.ktx)

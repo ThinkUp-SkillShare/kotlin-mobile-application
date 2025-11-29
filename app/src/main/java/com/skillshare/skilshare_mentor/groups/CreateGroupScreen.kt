@@ -51,7 +51,6 @@ fun CreateGroupScreen(
                     .padding(16.dp)
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                // Deshabilitar el botón si el nombre está vacío
                 enabled = groupName.isNotBlank()
             ) {
                 Text("Create Group")
@@ -66,7 +65,7 @@ fun CreateGroupScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp)) // Espacio superior
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Campos de texto
             CreateGroupTextField(
@@ -91,7 +90,6 @@ fun CreateGroupScreen(
                 minLines = 4
             )
 
-            // Sección de Privacidad
             Text(
                 text = "Privacy",
                 style = MaterialTheme.typography.titleMedium,

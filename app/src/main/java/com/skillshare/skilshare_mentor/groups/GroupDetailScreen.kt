@@ -209,7 +209,7 @@ fun GroupContent(
         GroupTab.CHAT -> {
             ChatScreen(
                 groupName = group.name,
-                onBackClick = { /* Navegar atrás si es necesario */ }
+                onBackClick = {  }
             )
         }
         GroupTab.RESOURCES -> {

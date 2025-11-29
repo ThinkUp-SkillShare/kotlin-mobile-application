@@ -41,7 +41,7 @@ fun DashboardBottomBar(
                 indicatorColor = PrimaryColor.copy(alpha = 0.1f)
             )
         )
-
+        /*
         NavigationBarItem(
             icon = {
                 Icon(
@@ -58,6 +58,7 @@ fun DashboardBottomBar(
                 indicatorColor = PrimaryColor.copy(alpha = 0.1f)
             )
         )
+        */
 
         NavigationBarItem(
             icon = {
@@ -75,7 +76,7 @@ fun DashboardBottomBar(
                 indicatorColor = PrimaryColor.copy(alpha = 0.1f)
             )
         )
-
+        /*
         NavigationBarItem(
             icon = {
                 Icon(
@@ -92,6 +93,7 @@ fun DashboardBottomBar(
                 indicatorColor = PrimaryColor.copy(alpha = 0.1f)
             )
         )
+        */
 
         NavigationBarItem(
             icon = {
