@@ -3,16 +3,16 @@ package com.skillshare.skilshare_mentor.statistics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilePresent
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.Quiz
-import androidx.compose.material.icons.filled.Slideshow
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,60 +25,56 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.skillshare.skilshare_mentor.files.colorDoc
-import com.skillshare.skilshare_mentor.files.colorPdf
-import com.skillshare.skilshare_mentor.files.colorPpt
-import com.skillshare.skilshare_mentor.files.colorQuiz
 import com.skillshare.skilshare_mentor.ui.theme.PrimaryColor
-import java.lang.Float.max
+import androidx.compose.ui.res.stringResource
+import com.skillshare.skilshare_mentor.R
 
-private val activityData = listOf(4f, 8f, 3f, 9f, 5f, 7f, 2f)
-private val activityLabels = listOf("Mo", "Tu", "We", "Th", "Fri", "Sat", "Su")
+private val activityData = listOf(12f, 45f, 32f, 50f, 28f, 15f, 5f)
+private val activityLabels = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
 
-data class StatItem(
-    val title: String,
-    val value: String,
-    val icon: ImageVector,
-    val color: Color
+data class StatItem(val title: String, val value: String, val icon: ImageVector, val color: Color)
+
+data class GroupStatus(
+    val name: String,
+    val studentCount: Int,
+    val fileCount: Int
 )
 
-private val statItems = listOf(
-    StatItem("Groups Joined", "4", Icons.Default.Groups, Color(0xFF3498DB)),
-    StatItem("Files Uploaded", "28", Icons.Default.FilePresent, Color(0xFF27AE60)),
-    StatItem("Time Spent", "12h", Icons.Default.Timer, Color(0xFFE67E22))
+private val groupStatusList = listOf(
+    GroupStatus("Fundamentos de Prog.", 32, 12),
+    GroupStatus("Cálculo II - UPC", 45, 8),
+    GroupStatus("Física I", 28, 15),
+    GroupStatus("Open Source", 15, 4),
+    GroupStatus("Base de Datos", 22, 10)
 )
 
-data class FileDistribution(
-    val type: String,
-    val percentage: Float,
-    val icon: ImageVector,
-    val color: Color
-)
-private val fileDistData = listOf(
-    FileDistribution("PDFs", 0.45f, Icons.Default.PictureAsPdf, colorPdf),
-    FileDistribution("Presentations", 0.25f, Icons.Default.Slideshow, colorPpt),
-    FileDistribution("Quizzes", 0.20f, Icons.Default.Quiz, colorQuiz),
-    FileDistribution("Documents", 0.10f, Icons.Default.Description, colorDoc)
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsContent() {
-    Scaffold(
-        topBar = {
-            StatisticsTopBar()
-        },
-        containerColor = Color(0xFFF8F9FA)
-    ) { paddingValues ->
+    val statItems = listOf(
+        StatItem(stringResource(R.string.stats_groups), "5", Icons.Default.Groups, Color(0xFF3498DB)),
+        StatItem(stringResource(R.string.stats_students), "142", Icons.Default.School, Color(0xFF27AE60)),
+        StatItem(stringResource(R.string.stats_resources), "28", Icons.Default.Folder, Color(0xFFE67E22))
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                StatisticsOverview()
+                Text(
+                    text = stringResource(R.string.stats_summary),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                StatisticsOverview(statItems)
             }
 
             item {
@@ -86,40 +82,29 @@ fun StatisticsContent() {
             }
 
             item {
-                FileDistribution()
+                Text(
+                    text = stringResource(R.string.stats_group_status),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp, top = 8.dp),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                GroupStatusList()
             }
+
+            item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatisticsTopBar() {
-    TopAppBar(
-        title = {
-            Text(
-                text = "Statistics",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
-    )
-}
-
-@Composable
-fun StatisticsOverview() {
+fun StatisticsOverview(items: List<StatItem>) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        statItems.forEach { item ->
-            StatCard(
-                item = item,
-                modifier = Modifier.weight(1f)
-            )
+        items.forEach { item ->
+            StatCard(item = item, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -129,7 +114,9 @@ fun StatCard(item: StatItem, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -142,21 +129,24 @@ fun StatCard(item: StatItem, modifier: Modifier = Modifier) {
                     .background(item.color.copy(alpha = 0.1f), CircleShape)
                     .padding(10.dp)
             ) {
-                Icon(item.icon, contentDescription = item.title, tint = item.color, modifier = Modifier.size(24.dp))
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = null,
+                    tint = item.color,
+                    modifier = Modifier.size(24.dp)
+                )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                item.value,
+                text = item.value,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                item.title,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
+                text = item.title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -167,16 +157,38 @@ fun ActivityChart() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                "Weekly Activity",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.stats_activity_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.stats_activity_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = PrimaryColor
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             ManualBarChart(
                 data = activityData,
@@ -193,29 +205,42 @@ fun ManualBarChart(
     labels: List<String>,
     color: Color,
     modifier: Modifier = Modifier,
-    chartHeight: Dp = 150.dp,
+    chartHeight: Dp = 180.dp,
     barWidth: Dp = 20.dp
 ) {
     val maxVal = data.maxOrNull() ?: 1f
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(chartHeight),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.Bottom
+            contentAlignment = Alignment.BottomCenter
         ) {
-            data.forEach { value ->
-                val barHeight = chartHeight * (value / maxVal)
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                repeat(4) {
+                    Divider(color = Color.Gray.copy(alpha = 0.1f), thickness = 1.dp)
+                }
+            }
 
-                Box(
-                    modifier = Modifier
-                        .height(barHeight)
-                        .width(barWidth)
-                        .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                        .background(color)
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                data.forEach { value ->
+                    val barHeight = chartHeight * (value / maxVal)
+                    Box(
+                        modifier = Modifier
+                            .height(barHeight)
+                            .width(barWidth)
+                            .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                            .background(color)
+                    )
+                }
             }
         }
 
@@ -223,14 +248,14 @@ fun ManualBarChart(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             labels.forEach { label ->
                 Text(
                     text = label,
                     modifier = Modifier.width(barWidth),
                     textAlign = TextAlign.Center,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     color = Color.Gray
                 )
             }
@@ -238,28 +263,20 @@ fun ManualBarChart(
     }
 }
 
-
 @Composable
-fun FileDistribution() {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            "File Distribution",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                fileDistData.forEach { item ->
-                    FileDistributionRow(item = item)
+fun GroupStatusList() {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            groupStatusList.forEachIndexed { index, group ->
+                GroupStatusRow(group)
+                if (index < groupStatusList.size - 1) {
+                    Divider(color = Color.Gray.copy(alpha = 0.1f), thickness = 1.dp)
                 }
             }
         }
@@ -267,43 +284,66 @@ fun FileDistribution() {
 }
 
 @Composable
-fun FileDistributionRow(item: FileDistribution) {
+fun GroupStatusRow(group: GroupStatus) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .background(item.color.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
-                .padding(8.dp)
+                .size(40.dp)
+                .background(Color(0xFFF0F2F5), CircleShape),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(item.icon, contentDescription = item.type, tint = item.color, modifier = Modifier.size(20.dp))
+            Text(
+                text = group.name.first().toString(),
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Text(
-            item.type,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = group.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
-        Text(
-            "${(item.percentage * 100).toInt()}%",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
-        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CountChip(icon = Icons.Default.Person, count = group.studentCount.toString(), color = Color(0xFF3498DB))
+            CountChip(icon = Icons.Default.Folder, count = group.fileCount.toString(), color = Color(0xFFE67E22))
+        }
+    }
+}
 
-        Spacer(modifier = Modifier.width(8.dp))
-
-        LinearProgressIndicator(
-            progress = item.percentage,
-            modifier = Modifier
-                .width(100.dp)
-                .height(8.dp)
-                .clip(CircleShape),
-            color = item.color
-        )
+@Composable
+fun CountChip(icon: ImageVector, count: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .background(color.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(12.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = count,
+                style = MaterialTheme.typography.labelSmall,
+                color = color,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }

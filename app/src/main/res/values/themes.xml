@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SkillShareMentor" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.SkillShareMentor" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Primary brand color -->
         <item name="android:colorPrimary">@color/primary</item>
         <item name="android:colorPrimaryDark">@color/primary_dark</item>

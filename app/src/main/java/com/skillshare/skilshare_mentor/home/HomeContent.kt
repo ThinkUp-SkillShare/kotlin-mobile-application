@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.skillshare.skilshare_mentor.ui.theme.PrimaryColor
+import androidx.compose.ui.res.stringResource
+import com.skillshare.skilshare_mentor.R
 
 data class MenuOption(
     val title: String,
@@ -39,19 +41,22 @@ fun HomeContent(
     onEditProfileClick: () -> Unit
 ) {
     val menuOptions = listOf(
-        /*
-        MenuOption("Mis Grupos", Icons.Default.Groups, Color(0xFF5E35B1), DashboardTab.Groups, "Gestiona tus clases"),
-        MenuOption("Archivos", Icons.Default.Folder, Color(0xFFFB8C00), DashboardTab.Files, "Material de estudio"),
-        */
-        MenuOption("Calendario", Icons.Default.CalendarMonth, Color(0xFF43A047), DashboardTab.Calendar, "Agenda académica"),
-        MenuOption("Estadísticas", Icons.Default.Analytics, Color(0xFFE53935), DashboardTab.Statistics, "Rendimiento"),
-        MenuOption("Mi Perfil", Icons.Default.Person, Color(0xFF1E88E5), DashboardTab.Profile, "Datos personales")
+        MenuOption(
+            stringResource(R.string.menu_create_group),
+            Icons.Default.AddCircleOutline,
+            Color(0xFF6200EE),
+            DashboardTab.CreateGroup,
+            stringResource(R.string.menu_create_group_desc)
+        ),
+        MenuOption(stringResource(R.string.calendar_title), Icons.Default.CalendarMonth, Color(0xFF43A047), DashboardTab.Calendar, stringResource(R.string.home_calendar_desc)),
+        MenuOption(stringResource(R.string.stats_title), Icons.Default.Analytics, Color(0xFFE53935), DashboardTab.Statistics, stringResource(R.string.home_stats_desc)),
+        MenuOption(stringResource(R.string.settings_title), Icons.Default.Person, Color(0xFF1E88E5), DashboardTab.Profile, stringResource(R.string.home_profile_desc))
     )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F7FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         HomeHeader(onProfileClick = onEditProfileClick)
 
@@ -88,13 +93,13 @@ fun HomeHeader(onProfileClick: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Bienvenido,",
+                    text = stringResource(R.string.home_welcome),
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White.copy(alpha = 0.8f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Docente Sebastián",
+                    text = "${stringResource(R.string.role_teacher)} Sebastián",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -129,7 +134,9 @@ fun MenuCard(option: MenuOption, onClick: () -> Unit) {
             .height(150.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -158,13 +165,13 @@ fun MenuCard(option: MenuOption, onClick: () -> Unit) {
                     text = option.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2C3E50)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = option.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

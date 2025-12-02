@@ -1,13 +1,18 @@
 package com.skillshare.skilshare_mentor
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.core.os.LocaleListCompat
 import com.skillshare.skilshare_mentor.home.DashboardScreen
 import com.skillshare.skilshare_mentor.home.DashboardTab
 import com.skillshare.skilshare_mentor.login.LoginScreen
@@ -20,118 +25,151 @@ import com.skillshare.skilshare_mentor.register.PersonalInfoScreen
 import com.skillshare.skilshare_mentor.register.UniversityDocumentScreen
 import com.skillshare.skilshare_mentor.register.VerificationProfessionScreen
 import com.skillshare.skilshare_mentor.register.WelcomeScreen
-import com.skillshare.skilshare_mentor.ui.theme.SkillShareTheme
 import com.skillshare.skilshare_mentor.settings.SettingsScreen
+import com.skillshare.skilshare_mentor.ui.theme.AppTheme
+import com.skillshare.skilshare_mentor.ui.theme.SkillShareTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SkillShareTheme {
-                SkillShareApp()
+            var currentTheme by remember { mutableStateOf(AppTheme.System) }
+            val useDarkTheme = when (currentTheme) {
+                AppTheme.Light -> false
+                AppTheme.Dark -> true
+                AppTheme.System -> isSystemInDarkTheme()
+            }
+
+            var currentLanguageCode by remember {
+                mutableStateOf(AppCompatDelegate.getApplicationLocales().toLanguageTags().ifEmpty { "en" })
+            }
+
+            SkillShareTheme(darkTheme = useDarkTheme) {
+                SkillShareApp(
+                    currentAppTheme = currentTheme,
+                    onThemeChange = { newTheme -> currentTheme = newTheme },
+                    currentLanguageCode = currentLanguageCode,
+                    onLanguageChange = { newCode ->
+                        currentLanguageCode = newCode
+
+                        val appLocale = LocaleListCompat.forLanguageTags(newCode)
+                        AppCompatDelegate.setApplicationLocales(appLocale)
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun SkillShareApp() {
-    var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Login) }
+fun SkillShareApp(
+    currentAppTheme: AppTheme = AppTheme.System,
+    onThemeChange: (AppTheme) -> Unit = {},
+    currentLanguageCode: String = "en",
+    onLanguageChange: (String) -> Unit = {}
+) {
+    var currentScreenIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    fun navigateTo(screen: AppScreen) {
+        currentScreenIndex = getIndexFromScreen(screen)
+    }
+
+    val currentScreen = getScreenFromIndex(currentScreenIndex)
 
     when (currentScreen) {
         AppScreen.Login -> {
             LoginScreen(
                 onLoginClick = { email, password ->
-                    currentScreen = AppScreen.Dashboard
+                    navigateTo(AppScreen.Dashboard)
                 },
                 onSignUpClick = {
-                    currentScreen = AppScreen.Welcome
+                    navigateTo(AppScreen.Welcome)
                 }
             )
         }
         AppScreen.Welcome -> {
             WelcomeScreen(
                 onStartClick = {
-                    currentScreen = AppScreen.PersonalInfo
+                    navigateTo(AppScreen.PersonalInfo)
                 },
                 onBackToLogin = {
-                    currentScreen = AppScreen.Login
+                    navigateTo(AppScreen.Login)
                 }
             )
         }
         AppScreen.PersonalInfo -> {
             PersonalInfoScreen(
                 onContinueClick = {
-                    currentScreen = AppScreen.AcademicWorld
+                    navigateTo(AppScreen.AcademicWorld)
                 },
                 onBackClick = {
-                    currentScreen = AppScreen.Welcome
+                    navigateTo(AppScreen.Welcome)
                 }
             )
         }
         AppScreen.AcademicWorld -> {
             AcademicWorldScreen(
                 onContinueClick = {
-                    currentScreen = AppScreen.VerificationProfession
+                    navigateTo(AppScreen.VerificationProfession)
                 },
                 onBackClick = {
-                    currentScreen = AppScreen.PersonalInfo
+                    navigateTo(AppScreen.PersonalInfo)
                 }
             )
         }
         AppScreen.VerificationProfession -> {
             VerificationProfessionScreen(
                 onBackClick = {
-                    currentScreen = AppScreen.AcademicWorld
+                    navigateTo(AppScreen.AcademicWorld)
                 },
                 onEmailVerified = {
-                    currentScreen = AppScreen.PersonalIdentity
+                    navigateTo(AppScreen.PersonalIdentity)
                 },
                 onDocumentSelected = {
-                    currentScreen = AppScreen.UniversityDocument
+                    navigateTo(AppScreen.UniversityDocument)
                 }
             )
         }
         AppScreen.UniversityDocument -> {
             UniversityDocumentScreen(
                 onContinueClick = {
-                    currentScreen = AppScreen.PersonalIdentity
+                    navigateTo(AppScreen.PersonalIdentity)
                 },
                 onBackClick = {
-                    currentScreen = AppScreen.VerificationProfession
+                    navigateTo(AppScreen.VerificationProfession)
                 }
             )
         }
         AppScreen.PersonalIdentity -> {
             PersonalIdentityScreen(
                 onContinueClick = {
-                    currentScreen = AppScreen.AllDone
+                    navigateTo(AppScreen.AllDone)
                 },
                 onBackClick = {
-                    currentScreen = AppScreen.VerificationProfession
+                    navigateTo(AppScreen.VerificationProfession)
                 }
             )
         }
         AppScreen.AllDone -> {
             AllDoneScreen(
                 onGoHomeClick = {
-                    currentScreen = AppScreen.Dashboard
+                    navigateTo(AppScreen.Dashboard)
                 },
                 onBackClick = {
-                    currentScreen = AppScreen.PersonalIdentity
+                    navigateTo(AppScreen.PersonalIdentity)
                 }
             )
         }
         AppScreen.Dashboard -> {
             DashboardScreen(
                 onSettingsClick = {
-                    currentScreen = AppScreen.Settings
+                    navigateTo(AppScreen.Settings)
                 },
                 onLogout = {
-                    currentScreen = AppScreen.Login
+                    navigateTo(AppScreen.Login)
                 },
                 onEditProfile = {
-                    currentScreen = AppScreen.EditProfile
+                    navigateTo(AppScreen.EditProfile)
                 },
                 initialTab = DashboardTab.Home
             )
@@ -154,10 +192,10 @@ fun SkillShareApp() {
                 teacher = exampleTeacher,
                 onSave = { updatedTeacher ->
                     println("Perfil actualizado: $updatedTeacher")
-                    currentScreen = AppScreen.Dashboard
+                    navigateTo(AppScreen.Dashboard)
                 },
                 onBack = {
-                    currentScreen = AppScreen.Dashboard
+                    navigateTo(AppScreen.Dashboard)
                 }
             )
         }
@@ -165,10 +203,47 @@ fun SkillShareApp() {
         AppScreen.Settings -> {
             SettingsScreen(
                 onBackClick = {
-                    currentScreen = AppScreen.Dashboard
-                }
+                    navigateTo(AppScreen.Dashboard)
+                },
+                currentTheme = currentAppTheme,
+                onThemeChange = onThemeChange,
+                currentLanguageCode = currentLanguageCode,
+                onLanguageChange = onLanguageChange
             )
         }
+    }
+}
+
+fun getIndexFromScreen(screen: AppScreen): Int {
+    return when (screen) {
+        AppScreen.Login -> 0
+        AppScreen.Welcome -> 1
+        AppScreen.PersonalInfo -> 2
+        AppScreen.AcademicWorld -> 3
+        AppScreen.VerificationProfession -> 4
+        AppScreen.PersonalIdentity -> 5
+        AppScreen.AllDone -> 6
+        AppScreen.UniversityDocument -> 7
+        AppScreen.Dashboard -> 8
+        AppScreen.EditProfile -> 9
+        AppScreen.Settings -> 10
+    }
+}
+
+fun getScreenFromIndex(index: Int): AppScreen {
+    return when (index) {
+        0 -> AppScreen.Login
+        1 -> AppScreen.Welcome
+        2 -> AppScreen.PersonalInfo
+        3 -> AppScreen.AcademicWorld
+        4 -> AppScreen.VerificationProfession
+        5 -> AppScreen.PersonalIdentity
+        6 -> AppScreen.AllDone
+        7 -> AppScreen.UniversityDocument
+        8 -> AppScreen.Dashboard
+        9 -> AppScreen.EditProfile
+        10 -> AppScreen.Settings
+        else -> AppScreen.Login
     }
 }
 
@@ -177,11 +252,11 @@ sealed class AppScreen {
     object Welcome : AppScreen()
     object PersonalInfo : AppScreen()
     object AcademicWorld : AppScreen()
-    object VerificationProfession: AppScreen()
-    object PersonalIdentity: AppScreen()
-    object AllDone: AppScreen()
-    object UniversityDocument: AppScreen()
-    object Dashboard: AppScreen()
-    object EditProfile: AppScreen()
-    object Settings: AppScreen()
+    object VerificationProfession : AppScreen()
+    object PersonalIdentity : AppScreen()
+    object AllDone : AppScreen()
+    object UniversityDocument : AppScreen()
+    object Dashboard : AppScreen()
+    object EditProfile : AppScreen()
+    object Settings : AppScreen()
 }

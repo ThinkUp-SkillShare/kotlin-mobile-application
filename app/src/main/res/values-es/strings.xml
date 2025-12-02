@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">SkillShare Mentor</string>
+    <string name="settings_title">Configuración</string>
+    <string name="language">Idioma</string>
+    <string name="theme">Tema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="theme_system">Sistema</string>
+
+    <string name="home_welcome">Bienvenido,</string>
+    <string name="role_teacher">Docente</string>
+    <string name="home_calendar_desc">Agenda académica</string>
+    <string name="home_stats_desc">Rendimiento</string>
+    <string name="home_profile_desc">Datos personales</string>
+
+    <string name="stats_title">Estadísticas</string>
+    <string name="stats_summary">Resumen General</string>
+    <string name="stats_groups">Grupos</string>
+    <string name="stats_students">Alumnos</string>
+    <string name="stats_resources">Recursos</string>
+    <string name="stats_activity_title">Interacción con Alumnos</string>
+    <string name="stats_activity_desc">Actividad semanal en grupos</string>
+    <string name="stats_group_status">Estado de tus Grupos</string>
+
+    <string name="profile_posts">Publicaciones</string>
+    <string name="profile_badges">Mis Insignias</string>
+    <string name="profile_created_groups">Grupos creados</string>
+    <string name="profile_reviews">Reseñas Recientes</string>
+    <string name="profile_view_reviews">Ver todas las reseñas</string>
+    <string name="profile_empty_badges">Aún no tienes insignias.</string>
+    <string name="profile_empty_groups">No has creado grupos todavía.</string>
+    <string name="profile_empty_reviews">No hay reseñas aún.</string>
+
+    <string name="calendar_title">Calendario</string>
+    <string name="calendar_empty">No hay eventos para este día.</string>
+    <string name="calendar_add_hint">Toca el botón + para agregar uno</string>
+    <string name="calendar_agenda">Agenda del día:</string>
+    <string name="calendar_new_event">Nuevo Evento</string>
+    <string name="calendar_edit_event">Editar Evento</string>
+    <string name="btn_save">Guardar</string>
+    <string name="btn_create">Crear</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_delete">Eliminar</string>
+    <string name="label_title">Título</string>
+    <string name="label_description">Descripción</string>
+
+    <string name="create_group_title">Crear Grupo</string>
+    <string name="create_group_btn">Crear Grupo</string>
+    <string name="group_name">Nombre del Grupo</string>
+    <string name="group_subject">Materia</string>
+    <string name="group_topic">Tema</string>
+    <string name="group_desc">Descripción</string>
+    <string name="privacy">Privacidad</string>
+    <string name="privacy_public">Público</string>
+    <string name="privacy_public_desc">Cualquiera puede unirse</string>
+    <string name="privacy_private">Privado</string>
+    <string name="privacy_private_desc">Solo invitados pueden unirse</string>
+    <string name="menu_create_group">Crear Grupo</string>
+    <string name="menu_create_group_desc">Inicia una nueva comunidad</string>
+
+    <string name="edit_profile_title">Editar Perfil</string>
+    <string name="label_name">Nombre</string>
+    <string name="label_lastname">Apellido</string>
+    <string name="label_nickname">Nickname</string>
+    <string name="label_birthday">Fecha de Cumpleaños</string>
+    <string name="label_uni_email">Email Universitario</string>
+    <string name="label_uni_id">Documento Universitario</string>
+    <string name="label_institution">Centro Educativo</string>
+    <string name="label_country">País</string>
+    <string name="label_gender">Sexo</string>
+    <string name="btn_save_changes">Guardar Cambios</string>
+</resources>

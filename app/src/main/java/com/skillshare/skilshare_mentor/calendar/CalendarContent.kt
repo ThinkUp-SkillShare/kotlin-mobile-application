@@ -23,6 +23,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import androidx.compose.ui.res.stringResource
+import com.skillshare.skilshare_mentor.R
 
 data class Event(
     val id: String = UUID.randomUUID().toString(),
@@ -120,9 +122,9 @@ fun CalendarContent() {
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Nuevo Evento", tint = Color.White)
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        // Contenido Principal
         EventList(
             events = eventsForSelectedDate,
             onEventClick = { event ->
@@ -206,16 +208,21 @@ fun CalendarTopBar(
             Text(
                 text = titleFormatter.format(selectedDate),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
         },
         actions = {
             IconButton(onClick = onShowCalendar) {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Select Date")
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = "Select Date",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.background
         )
     )
 }
@@ -233,16 +240,16 @@ fun EventList(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "No hay eventos para este día.",
+                    text = stringResource(R.string.calendar_empty),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Toca el botón + para agregar uno",
+                    text = stringResource(R.string.calendar_add_hint),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
         }
@@ -254,10 +261,11 @@ fun EventList(
         ) {
             item {
                 Text(
-                    "Agenda del día:",
+                    text = stringResource(R.string.calendar_agenda),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
             items(events) { event ->
@@ -274,7 +282,9 @@ fun EventCard(event: Event, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(
             modifier = Modifier
@@ -297,19 +307,19 @@ fun EventCard(event: Event, onClick: () -> Unit) {
                     text = event.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = event.description,
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
             Icon(
                 imageVector = Icons.Default.Edit,
                 contentDescription = "Editar",
-                tint = Color.LightGray,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier
                     .padding(16.dp)
                     .size(20.dp)
@@ -333,14 +343,14 @@ fun EventEditorDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = if (isEditing) "Editar Evento" else "Nuevo Evento")
+            Text(text = if (isEditing) stringResource(R.string.calendar_edit_event) else stringResource(R.string.calendar_new_event))
         },
         text = {
             Column {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Título") },
+                    label = { Text(stringResource(R.string.label_title)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -348,7 +358,7 @@ fun EventEditorDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripción / Curso") },
+                    label = { Text(stringResource(R.string.label_description)) },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3
                 )
@@ -363,25 +373,24 @@ fun EventEditorDialog(
                 },
                 enabled = title.isNotBlank()
             ) {
-                Text(if (isEditing) "Guardar Cambios" else "Crear")
+                Text(if (isEditing) stringResource(R.string.btn_save) else stringResource(R.string.btn_create))
             }
         },
         dismissButton = {
             Row {
                 if (isEditing) {
                     TextButton(onClick = onDelete) {
-                        Text("Eliminar", color = Color.Red)
+                        Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error)
                     }
                 }
                 TextButton(onClick = onDismiss) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.btn_cancel))
                 }
             }
         }
     )
 }
 
-// Función auxiliar para colores
 fun getRandomColor(): Color {
     val colors = listOf(
         Color(0xFFE74C3C),

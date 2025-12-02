@@ -620,7 +620,6 @@ fun AttachmentOptionsMenu(
         title = { Text("Seleccionar archivo") },
         text = {
             Column {
-                // Opciones de archivo irían aquí
                 Text("Esta funcionalidad se integraría con el sistema de archivos del dispositivo")
             }
         },

@@ -14,10 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.skillshare.skilshare_mentor.R
 import com.skillshare.skilshare_mentor.profile.entity.Teacher
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,25 +30,133 @@ fun EditProfileScreen(
     onSave: (Teacher) -> Unit,
     onBack: () -> Unit
 ) {
-    var editedTeacher by remember { mutableStateOf(teacher) }
+    var firstName by remember { mutableStateOf(teacher.firstName) }
+    var lastName by remember { mutableStateOf(teacher.lastName) }
+    var nickname by remember { mutableStateOf(teacher.nickname) }
+    var educationalCenter by remember { mutableStateOf(teacher.educationalCenter) }
+    var country by remember { mutableStateOf(teacher.country) }
+    var gender by remember { mutableStateOf(teacher.gender) }
+
+    val dateBirth = teacher.dateBirth
+    val universityEmail = teacher.universityEmail
+    val universityDocument = teacher.universityDocument
 
     Scaffold(
         topBar = {
             EditProfileTopBar(
                 onBack = onBack,
-                onSave = { onSave(editedTeacher) }
+                onSave = {
+                    val updatedTeacher = teacher.copy(
+                        firstName = firstName,
+                        lastName = lastName,
+                        nickname = nickname,
+                        educationalCenter = educationalCenter,
+                        country = country,
+                        gender = gender
+                    )
+                    onSave(updatedTeacher)
+                }
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        EditProfileContent(
-            teacher = editedTeacher,
-            onTeacherUpdate = { updatedTeacher ->
-                editedTeacher = updatedTeacher
-            },
+        Column(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
-        )
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProfilePictureSection(
+                coverUrl = teacher.cover,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            EditProfileTextField(
+                label = stringResource(R.string.label_name),
+                value = firstName,
+                onValueChange = { firstName = it },
+                leadingIcon = Icons.Default.Person
+            )
+
+            EditProfileTextField(
+                label = stringResource(R.string.label_lastname),
+                value = lastName,
+                onValueChange = { lastName = it },
+                leadingIcon = Icons.Default.PersonOutline
+            )
+
+            EditProfileTextField(
+                label = stringResource(R.string.label_nickname),
+                value = nickname,
+                onValueChange = { nickname = it },
+                leadingIcon = Icons.Default.AlternateEmail
+            )
+
+            DisabledTextField(
+                label = stringResource(R.string.label_birthday),
+                value = formatBirthday(dateBirth),
+                leadingIcon = Icons.Default.Cake
+            )
+
+            DisabledTextField(
+                label = stringResource(R.string.label_uni_email),
+                value = universityEmail,
+                leadingIcon = Icons.Default.Email
+            )
+
+            DisabledTextField(
+                label = stringResource(R.string.label_uni_id),
+                value = universityDocument,
+                leadingIcon = Icons.Default.Badge
+            )
+
+            // --- MÁS CAMPOS EDITABLES ---
+
+            EditProfileTextField(
+                label = stringResource(R.string.label_institution),
+                value = educationalCenter,
+                onValueChange = { educationalCenter = it },
+                leadingIcon = Icons.Default.School
+            )
+
+            EditProfileTextField(
+                label = stringResource(R.string.label_country),
+                value = country,
+                onValueChange = { country = it },
+                leadingIcon = Icons.Default.Public
+            )
+
+            GenderDropdown(
+                selectedGender = gender,
+                onGenderSelected = { gender = it }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botón de Guardar (Inferior)
+            SaveButton(
+                onClick = {
+                    val updatedTeacher = teacher.copy(
+                        firstName = firstName,
+                        lastName = lastName,
+                        nickname = nickname,
+                        educationalCenter = educationalCenter,
+                        country = country,
+                        gender = gender
+                    )
+                    onSave(updatedTeacher)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
@@ -58,7 +169,7 @@ fun EditProfileTopBar(
     TopAppBar(
         title = {
             Text(
-                text = "Editar Perfil",
+                text = stringResource(R.string.edit_profile_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -68,17 +179,15 @@ fun EditProfileTopBar(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         },
         actions = {
-            TextButton(
-                onClick = onSave
-            ) {
+            TextButton(onClick = onSave) {
                 Text(
-                    text = "Guardar",
+                    text = stringResource(R.string.btn_save_changes),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -92,150 +201,40 @@ fun EditProfileTopBar(
 }
 
 @Composable
-fun EditProfileContent(
-    teacher: Teacher,
-    onTeacherUpdate: (Teacher) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ProfilePictureSection(
-            coverUrl = teacher.cover,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        EditProfileTextField(
-            label = "Nombre",
-            value = teacher.firstName,
-            onValueChange = { newValue ->
-                onTeacherUpdate(teacher.copy(firstName = newValue))
-            },
-            leadingIcon = Icons.Default.Person
-        )
-
-        EditProfileTextField(
-            label = "Apellido",
-            value = teacher.lastName,
-            onValueChange = { newValue ->
-                onTeacherUpdate(teacher.copy(lastName = newValue))
-            },
-            leadingIcon = Icons.Default.PersonOutline
-        )
-
-        EditProfileTextField(
-            label = "Nickname",
-            value = teacher.nickname,
-            onValueChange = { newValue ->
-                onTeacherUpdate(teacher.copy(nickname = newValue))
-            },
-            leadingIcon = Icons.Default.AlternateEmail
-        )
-
-        DisabledTextField(
-            label = "Fecha de Cumpleaños",
-            value = formatBirthday(teacher.dateBirth),
-            leadingIcon = Icons.Default.Cake
-        )
-
-        DisabledTextField(
-            label = "Email Universitario",
-            value = teacher.universityEmail,
-            leadingIcon = Icons.Default.Email
-        )
-
-        DisabledTextField(
-            label = "Documento Universitario",
-            value = teacher.universityDocument,
-            leadingIcon = Icons.Default.Badge
-        )
-
-        EditProfileTextField(
-            label = "Centro Educativo",
-            value = teacher.educationalCenter,
-            onValueChange = { newValue ->
-                onTeacherUpdate(teacher.copy(educationalCenter = newValue))
-            },
-            leadingIcon = Icons.Default.School
-        )
-
-        EditProfileTextField(
-            label = "País",
-            value = teacher.country,
-            onValueChange = { newValue ->
-                onTeacherUpdate(teacher.copy(country = newValue))
-            },
-            leadingIcon = Icons.Default.Public
-        )
-
-        GenderDropdown(
-            selectedGender = teacher.gender,
-            onGenderSelected = { newGender ->
-                onTeacherUpdate(teacher.copy(gender = newGender))
-            }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        SaveButton(
-            onClick = { onTeacherUpdate(teacher) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-@Composable
 fun ProfilePictureSection(
     coverUrl: String,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-    ) {
-        Box {
-            Box(
+    Box(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .shadow(elevation = 4.dp, shape = CircleShape, clip = false)
+        ) {
+            AsyncImage(
+                model = coverUrl,
+                contentDescription = null,
                 modifier = Modifier
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = CircleShape,
-                        clip = false
-                    )
-            ) {
-                AsyncImage(
-                    model = coverUrl,
-                    contentDescription = "Foto de perfil",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            }
+                    .size(120.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
 
-            Box(
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+        ) {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CameraAlt,
-                    contentDescription = "Cambiar foto",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .align(Alignment.Center)
-                )
-            }
+                    .size(20.dp)
+                    .align(Alignment.Center)
+            )
         }
     }
 }
@@ -269,10 +268,13 @@ fun EditProfileTextField(
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
             focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
         )
     )
 }
@@ -297,7 +299,7 @@ fun DisabledTextField(
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
         },
         modifier = Modifier.fillMaxWidth(),
@@ -305,10 +307,9 @@ fun DisabledTextField(
         enabled = false,
         colors = TextFieldDefaults.colors(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            disabledIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
-            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            disabledIndicatorColor = Color.Transparent,
+            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
         )
     )
 }
@@ -331,13 +332,13 @@ fun GenderDropdown(
             onValueChange = { },
             label = {
                 Text(
-                    text = "Sexo",
+                    text = stringResource(R.string.label_gender),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.PersonOutline,
+                    imageVector = Icons.Default.Face,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -353,21 +354,25 @@ fun GenderDropdown(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
             )
         )
 
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
         ) {
             genderOptions.forEach { gender ->
                 DropdownMenuItem(
                     text = {
                         Text(
                             text = gender,
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     },
                     onClick = {
@@ -394,7 +399,7 @@ fun SaveButton(
         )
     ) {
         Text(
-            text = "Guardar Cambios",
+            text = stringResource(R.string.btn_save_changes),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onPrimary
