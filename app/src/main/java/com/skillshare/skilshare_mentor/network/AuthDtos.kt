@@ -38,3 +38,12 @@ data class UpdateUserRequest(
     val country: String,
     val gender: String
 )
+
+data class CreateGroupRequest(
+    val name: String,
+    val subject: String,
+    val topic: String,
+    val description: String,
+    val privacy: String,
+    val creatorUserId: Int
+)

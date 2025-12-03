@@ -157,6 +157,7 @@ fun SkillShareApp(
                 userName = currentUserName,
                 userLastName = currentUserLastName,
                 institution = currentInstitution,
+                currentUserId = currentUserId,
                 onSettingsClick = { navigateTo(AppScreen.Settings) },
                 onLogout = { navigateTo(AppScreen.Login) },
                 onEditProfile = { navigateTo(AppScreen.EditProfile) },

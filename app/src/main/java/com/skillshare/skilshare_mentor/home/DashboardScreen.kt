@@ -13,6 +13,9 @@ import com.skillshare.skilshare_mentor.calendar.CalendarContent
 import com.skillshare.skilshare_mentor.profile.ProfileContent
 import com.skillshare.skilshare_mentor.statistics.StatisticsContent
 import com.skillshare.skilshare_mentor.groups.CreateGroupScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,13 +23,15 @@ fun DashboardScreen(
     userName: String,
     userLastName: String,
     institution: String,
+    currentUserId: Int,
     onSettingsClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
     initialTab: DashboardTab = DashboardTab.Home
 ) {
     var selectedTab by remember { mutableStateOf(initialTab) }
-
+    val createGroupViewModel: com.skillshare.skilshare_mentor.groups.CreateGroupViewModel = viewModel()
+    val context = LocalContext.current
     val onBackToHome = { selectedTab = DashboardTab.Home }
 
     Scaffold(
@@ -81,12 +86,26 @@ fun DashboardScreen(
                     onSettingsClick = onSettingsClick,
                     onEditProfileClick = onEditProfile
                 )
-                DashboardTab.CreateGroup -> CreateGroupScreen(
-                    onCreateClick = { name, subject, topic, desc, privacy ->
-                        println("Crear grupo: $name, $privacy")
+                DashboardTab.CreateGroup -> {
+                    if (createGroupViewModel.isCreated) {
                         selectedTab = DashboardTab.Home
+                        createGroupViewModel.resetState()
+                        Toast.makeText(context, "¡Grupo creado!", Toast.LENGTH_SHORT).show()
                     }
-                )
+
+                    if (createGroupViewModel.createError != null) {
+                        Toast.makeText(context, createGroupViewModel.createError, Toast.LENGTH_LONG).show()
+                    }
+
+                    CreateGroupScreen(
+                        onCreateClick = { name, subject, topic, description, privacy ->
+                            createGroupViewModel.createGroup(
+                                name, subject, topic, description, privacy,
+                                creatorId = currentUserId
+                            )
+                        }
+                    )
+                }
                 DashboardTab.Calendar -> CalendarContent()
                 DashboardTab.Statistics -> StatisticsContent()
                 DashboardTab.Profile -> ProfileContent(

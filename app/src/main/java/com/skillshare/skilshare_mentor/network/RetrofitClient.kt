@@ -18,11 +18,14 @@ interface ApiService {
         @retrofit2.http.Path("id") id: Int,
         @retrofit2.http.Body request: UpdateUserRequest
     ): retrofit2.Response<Any>
+
+    @POST("api/Group")
+    suspend fun createGroup(@Body request: CreateGroupRequest): Response<Any>
 }
 
 object RetrofitClient {
     private const val BASE_URL = "https://skillshare-kotlin-backend.onrender.com/"
-
+    //private const val BASE_URL = "http://10.0.2.2:5032/"
     val api: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

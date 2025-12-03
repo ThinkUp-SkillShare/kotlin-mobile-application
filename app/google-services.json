@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "306612730250",
+    "project_id": "skillshare-mobile-5561e",
+    "storage_bucket": "skillshare-mobile-5561e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306612730250:android:080124a1c7ad73aa2cb073",
+        "android_client_info": {
+          "package_name": "com.skillshare.skilshare_mentor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAa5lx7uti8WimnUwniN2jgSEq0eJxsRUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306612730250:android:0b7bebf9d4acee752cb073",
+        "android_client_info": {
+          "package_name": "com.upc.skillshare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAa5lx7uti8WimnUwniN2jgSEq0eJxsRUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
