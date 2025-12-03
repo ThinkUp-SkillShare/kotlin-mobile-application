@@ -32,67 +32,66 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.skillshare.skilshare_mentor.ui.theme.*
 
+import android.widget.Toast
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalIdentityScreen(
+    viewModel: RegisterViewModel,
     onContinueClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
-    var nickname by remember { mutableStateOf("") }
-    var selectedGender by remember { mutableStateOf<Gender?>(null) }
+    // Variables para el Dropdown local
     var expandedGender by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    LaunchedEffect(viewModel.isRegistered) {
+        if (viewModel.isRegistered) {
+            Toast.makeText(context, "¡Usuario creado en MySQL!", Toast.LENGTH_LONG).show()
+            onContinueClick() // Navegamos a AllDone
+            viewModel.isRegistered = false
+        }
+    }
+
+    LaunchedEffect(viewModel.registrationError) {
+        viewModel.registrationError?.let { error ->
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            viewModel.registrationError = null
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBackClick
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
             color = MaterialTheme.colorScheme.background
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 32.dp)
-            ) {
-
+            Column(modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp)) {
+                // ... (Imagen y Título) ...
                 val painter = rememberAsyncImagePainter(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data("file:///android_asset/images/common/foxdungee/personal_identity.png")
                         .build()
                 )
-
                 Image(
                     painter = painter,
                     contentDescription = "Personal Identity",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(200.dp)
-                        .align(Alignment.CenterHorizontally)
+                    modifier = Modifier.size(200.dp).align(Alignment.CenterHorizontally)
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
                     text = "Your personal identity",
                     style = MaterialTheme.typography.headlineMedium,
@@ -102,89 +101,48 @@ fun PersonalIdentityScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text(
-                    text = "Nickname",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Gray,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                )
+                Text("Nickname", style = MaterialTheme.typography.bodyMedium, color = Gray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
 
                 TextFieldWithBorder(
-                    value = nickname,
-                    onValueChange = { nickname = it },
+                    value = viewModel.nickname,
+                    onValueChange = { viewModel.nickname = it },
                     placeholder = "Enter your nickname",
                     icon = Icons.Default.Person,
                     keyboardType = KeyboardType.Text,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
                 )
 
-                Text(
-                    text = "Gender",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Gray,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                )
+                Text("Gender", style = MaterialTheme.typography.bodyMedium, color = Gray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
-                ) {
+                Box(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
                     ExposedDropdownMenuBox(
                         expanded = expandedGender,
                         onExpandedChange = { expandedGender = !expandedGender }
                     ) {
                         TextFieldWithBorder(
-                            value = selectedGender?.displayName ?: "",
+                            value = viewModel.gender, // ⬅️ Usamos gender del VM
                             onValueChange = {},
                             placeholder = "Select your gender",
                             icon = Icons.Default.Person,
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth(),
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
                             readOnly = true,
                             trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.ExpandMore,
-                                    contentDescription = "Expand gender options",
-                                    tint = Gray,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                Icon(Icons.Default.ExpandMore, "Expand", tint = Gray, modifier = Modifier.size(20.dp))
                             }
                         )
                         ExposedDropdownMenu(
                             expanded = expandedGender,
                             onDismissRequest = { expandedGender = false },
-                            modifier = Modifier
-                                .background(White)
-                                .border(
-                                    width = 1.dp,
-                                    color = BorderGray,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                            modifier = Modifier.background(White).border(1.dp, BorderGray, RoundedCornerShape(12.dp))
                         ) {
-                            Gender.entries.forEach { gender ->
+                            // Opciones simples mapeadas al backend
+                            listOf("Masculino", "Femenino", "Otro").forEach { gender ->
                                 DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = gender.displayName,
-                                            color = PrimaryColor,
-                                            fontSize = 16.sp
-                                        )
-                                    },
+                                    text = { Text(gender, color = PrimaryColor, fontSize = 16.sp) },
                                     onClick = {
-                                        selectedGender = gender
+                                        viewModel.gender = gender // ⬅️ GUARDAMOS
                                         expandedGender = false
                                     },
                                     modifier = Modifier.background(White)
@@ -196,30 +154,23 @@ fun PersonalIdentityScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 40.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 40.dp), horizontalArrangement = Arrangement.End) {
                     TextButton(
-                        onClick = onContinueClick,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.tertiary
-                        ),
-                        enabled = isFormValid(nickname, selectedGender)
+                        onClick = {
+                            // 🚀 LLAMAMOS AL REGISTRO REAL
+                            viewModel.registerUser()
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
+                        // Deshabilitar si está cargando o faltan datos
+                        enabled = viewModel.nickname.isNotEmpty() && !viewModel.isLoading
                     ) {
-                        Text(
-                            text = "Continue",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Continue",
-                            modifier = Modifier.size(20.dp)
-                        )
+                        if (viewModel.isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(Icons.Default.ArrowForward, "Continue", modifier = Modifier.size(20.dp))
+                        }
                     }
                 }
             }
@@ -319,7 +270,9 @@ fun TextFieldWithBorder(
 @Composable
 fun PersonalIdentityScreenPreview() {
     SkillShareTheme {
+        val mockViewModel = remember { RegisterViewModel() }
         PersonalIdentityScreen(
+            viewModel = mockViewModel,
             onContinueClick = {},
             onBackClick = {}
         )

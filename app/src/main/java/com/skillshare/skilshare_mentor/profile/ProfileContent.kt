@@ -94,8 +94,16 @@ val mockUserProfile = UserProfile(
 )
 
 @Composable
-fun ProfileContent() {
-    val user = mockUserProfile
+fun ProfileContent(
+    firstName: String,
+    lastName: String,
+    institution: String
+) {
+    val user = mockUserProfile.copy(
+        firstName = firstName,
+        lastName = lastName,
+        institution = institution
+    )
     val scrollState = rememberScrollState()
 
     Column(

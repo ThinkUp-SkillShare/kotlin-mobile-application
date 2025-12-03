@@ -1,6 +1,7 @@
 package com.skillshare.skilshare_mentor.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,22 +15,33 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.skillshare.skilshare_mentor.R
 import com.skillshare.skilshare_mentor.profile.entity.Teacher
+import com.skillshare.skilshare_mentor.ui.theme.PrimaryColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
+    viewModel: EditProfileViewModel,
+    userId: Int,
     teacher: Teacher,
-    onSave: (Teacher) -> Unit,
+    onSaveSuccess: (Teacher) -> Unit,
     onBack: () -> Unit
 ) {
+    // Estados locales para la edición
     var firstName by remember { mutableStateOf(teacher.firstName) }
     var lastName by remember { mutableStateOf(teacher.lastName) }
     var nickname by remember { mutableStateOf(teacher.nickname) }
@@ -40,6 +52,21 @@ fun EditProfileScreen(
     val dateBirth = teacher.dateBirth
     val universityEmail = teacher.universityEmail
     val universityDocument = teacher.universityDocument
+
+    LaunchedEffect(viewModel.isSaved) {
+        if (viewModel.isSaved) {
+            val updatedTeacher = teacher.copy(
+                firstName = firstName,
+                lastName = lastName,
+                nickname = nickname,
+                educationalCenter = educationalCenter,
+                country = country,
+                gender = gender
+            )
+            onSaveSuccess(updatedTeacher)
+            viewModel.isSaved = false
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -54,8 +81,9 @@ fun EditProfileScreen(
                         country = country,
                         gender = gender
                     )
-                    onSave(updatedTeacher)
-                }
+                    viewModel.saveProfile(userId, updatedTeacher)
+                },
+                isLoading = viewModel.isLoading
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -97,7 +125,7 @@ fun EditProfileScreen(
                 onValueChange = { nickname = it },
                 leadingIcon = Icons.Default.AlternateEmail
             )
-
+            /*
             DisabledTextField(
                 label = stringResource(R.string.label_birthday),
                 value = formatBirthday(dateBirth),
@@ -115,9 +143,7 @@ fun EditProfileScreen(
                 value = universityDocument,
                 leadingIcon = Icons.Default.Badge
             )
-
-            // --- MÁS CAMPOS EDITABLES ---
-
+            */
             EditProfileTextField(
                 label = stringResource(R.string.label_institution),
                 value = educationalCenter,
@@ -137,9 +163,16 @@ fun EditProfileScreen(
                 onGenderSelected = { gender = it }
             )
 
+            if (viewModel.saveError != null) {
+                Text(
+                    text = viewModel.saveError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón de Guardar (Inferior)
             SaveButton(
                 onClick = {
                     val updatedTeacher = teacher.copy(
@@ -150,8 +183,9 @@ fun EditProfileScreen(
                         country = country,
                         gender = gender
                     )
-                    onSave(updatedTeacher)
+                    viewModel.saveProfile(userId, updatedTeacher)
                 },
+                isLoading = viewModel.isLoading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -164,7 +198,8 @@ fun EditProfileScreen(
 @Composable
 fun EditProfileTopBar(
     onBack: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    isLoading: Boolean
 ) {
     TopAppBar(
         title = {
@@ -179,19 +214,27 @@ fun EditProfileTopBar(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    contentDescription = null,
+                    contentDescription = "Volver",
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         },
         actions = {
-            TextButton(onClick = onSave) {
-                Text(
-                    text = stringResource(R.string.btn_save_changes),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp).padding(end = 16.dp),
+                    strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.primary
                 )
+            } else {
+                TextButton(onClick = onSave) {
+                    Text(
+                        text = stringResource(R.string.btn_save),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -239,79 +282,119 @@ fun ProfilePictureSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileTextField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector
+    leadingIcon: ImageVector
 ) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        },
-        leadingIcon = {
+    var isFocused by remember { mutableStateOf(false) }
+    val containerColor = MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val borderColor = if (isFocused) MaterialTheme.colorScheme.primary else Color.Transparent
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize()
+        ) {
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = if (isFocused) MaterialTheme.colorScheme.primary else contentColor.copy(alpha = 0.7f),
+                modifier = Modifier.size(20.dp)
             )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-        )
-    )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                if (value.isNotEmpty()) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
+                        color = contentColor.copy(alpha = 0.7f)
+                    )
+                }
+                androidx.compose.foundation.text.BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { isFocused = it.isFocused },
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 16.sp
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        if (value.isEmpty()) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = contentColor.copy(alpha = 0.5f),
+                                fontSize = 16.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
+        }
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DisabledTextField(
     label: String,
     value: String,
-    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector
+    leadingIcon: ImageVector
 ) {
-    TextField(
-        value = value,
-        onValueChange = { },
-        label = {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        },
-        leadingIcon = {
+    val containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    val contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(containerColor)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = leadingIcon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                tint = contentColor,
+                modifier = Modifier.size(20.dp)
             )
-        },
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        enabled = false,
-        colors = TextFieldDefaults.colors(
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            disabledIndicatorColor = Color.Transparent,
-            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-        )
-    )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 10.sp,
+                    color = contentColor
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 16.sp,
+                    color = contentColor
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -322,44 +405,53 @@ fun GenderDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val genderOptions = listOf("Masculino", "Femenino", "Otro", "Prefiero no decir")
+    val containerColor = MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
     ) {
-        TextField(
-            value = selectedGender,
-            onValueChange = { },
-            label = {
-                Text(
-                    text = stringResource(R.string.label_gender),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            leadingIcon = {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .menuAnchor()
+                .clip(RoundedCornerShape(12.dp))
+                .background(containerColor)
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Face,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = contentColor.copy(alpha = 0.7f),
+                    modifier = Modifier.size(20.dp)
                 )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
-            shape = RoundedCornerShape(12.dp),
-            readOnly = true,
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-            )
-        )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.label_gender),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
+                        color = contentColor.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = selectedGender,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = contentColor.copy(alpha = 0.7f)
+                )
+            }
+        }
 
         ExposedDropdownMenu(
             expanded = expanded,
@@ -371,7 +463,6 @@ fun GenderDropdown(
                     text = {
                         Text(
                             text = gender,
-                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     },
@@ -388,22 +479,28 @@ fun GenderDropdown(
 @Composable
 fun SaveButton(
     onClick: () -> Unit,
+    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
         modifier = modifier.height(50.dp),
         shape = RoundedCornerShape(12.dp),
+        enabled = !isLoading,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary
         )
     ) {
-        Text(
-            text = stringResource(R.string.btn_save_changes),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onPrimary
-        )
+        if (isLoading) {
+            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+        } else {
+            Text(
+                text = stringResource(R.string.btn_save_changes),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
     }
 }
 

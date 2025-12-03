@@ -1,19 +1,10 @@
 package com.skillshare.skilshare_mentor.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,19 +13,8 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +22,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,24 +31,30 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.skillshare.skilshare_mentor.R
-import com.skillshare.skilshare_mentor.ui.theme.BackgroundColor
-import com.skillshare.skilshare_mentor.ui.theme.BorderGray
-import com.skillshare.skilshare_mentor.ui.theme.Gray
-import com.skillshare.skilshare_mentor.ui.theme.PrimaryColor
-import com.skillshare.skilshare_mentor.ui.theme.White
+import com.skillshare.skilshare_mentor.ui.theme.*
 
 @Composable
 fun LoginScreen(
-    onLoginClick: (String, String) -> Unit,
+    viewModel: LoginViewModel, // ⬅️ 1. Recibimos el ViewModel
+    onLoginSuccess: () -> Unit, // Cambiamos el nombre para que sea más claro
     onSignUpClick: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    // Variables de estado local para UI (visibilidad contraseña)
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // 🔔 2. Escuchamos el éxito del login
+    LaunchedEffect(viewModel.isLoginSuccessful) {
+        if (viewModel.isLoginSuccessful) {
+            Toast.makeText(context, "¡Bienvenido!", Toast.LENGTH_SHORT).show()
+            onLoginSuccess() // Navegar al Dashboard
+            viewModel.isLoginSuccessful = false // Resetear flag
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = BackgroundColor
+        color = MaterialTheme.colorScheme.background // Adaptado a tema oscuro
     ) {
         Column(
             modifier = Modifier
@@ -93,9 +80,10 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 40.dp)
             )
 
+            // 3. Usamos viewModel.email
             TextFieldWithBorder(
-                value = email,
-                onValueChange = { email = it },
+                value = viewModel.email,
+                onValueChange = { viewModel.email = it },
                 placeholder = "Enter your email",
                 icon = Icons.Default.Email,
                 keyboardType = KeyboardType.Email,
@@ -104,9 +92,10 @@ fun LoginScreen(
                     .padding(bottom = 20.dp)
             )
 
+            // 4. Usamos viewModel.password
             PasswordFieldWithBorder(
-                value = password,
-                onValueChange = { password = it },
+                value = viewModel.password,
+                onValueChange = { viewModel.password = it },
                 placeholder = "Enter your password",
                 icon = Icons.Default.Lock,
                 isPasswordVisible = passwordVisible,
@@ -116,21 +105,45 @@ fun LoginScreen(
                     .padding(bottom = 30.dp)
             )
 
+            // 5. Mensaje de Error (Si falla el login)
+            if (viewModel.loginError != null) {
+                Text(
+                    text = viewModel.loginError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            // 6. Botón de Login con estado de carga
             Button(
-                onClick = { onLoginClick(email, password) },
+                onClick = {
+                    if (!viewModel.isLoading) {
+                        viewModel.loginUser()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = PrimaryColor
-                )
+                ),
+                enabled = !viewModel.isLoading // Deshabilitar si carga
             ) {
-                Text(
-                    text = "Sign in",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (viewModel.isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Sign in",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -162,6 +175,8 @@ fun LoginScreen(
     }
 }
 
+// --- TUS COMPONENTES PERSONALIZADOS (Sin cambios, solo adaptados a tema oscuro si quieres) ---
+
 @Composable
 fun TextFieldWithBorder(
     value: String,
@@ -172,15 +187,19 @@ fun TextFieldWithBorder(
     modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    // Adaptación a tema oscuro
+    val backgroundColor = MaterialTheme.colorScheme.surface
+    val contentColor = MaterialTheme.colorScheme.onSurface
+    val borderColor = if (isFocused) PrimaryColor else BorderGray
 
     Box(
         modifier = modifier
             .height(56.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(White)
+            .background(backgroundColor)
             .border(
                 width = 1.dp,
-                color = if (isFocused) PrimaryColor else BorderGray,
+                color = borderColor,
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(horizontal = 16.dp),
@@ -207,7 +226,7 @@ fun TextFieldWithBorder(
                         isFocused = focusState.isFocused
                     },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = PrimaryColor,
+                    color = contentColor, // Texto adaptable
                     fontSize = 16.sp
                 ),
                 cursorBrush = SolidColor(PrimaryColor),
@@ -241,15 +260,19 @@ fun PasswordFieldWithBorder(
     modifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    // Adaptación a tema oscuro
+    val backgroundColor = MaterialTheme.colorScheme.surface
+    val contentColor = MaterialTheme.colorScheme.onSurface
+    val borderColor = if (isFocused) PrimaryColor else BorderGray
 
     Box(
         modifier = modifier
             .height(56.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(White)
+            .background(backgroundColor)
             .border(
                 width = 1.dp,
-                color = if (isFocused) PrimaryColor else BorderGray,
+                color = borderColor,
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(horizontal = 16.dp),
@@ -276,7 +299,7 @@ fun PasswordFieldWithBorder(
                         isFocused = focusState.isFocused
                     },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = PrimaryColor,
+                    color = contentColor, // Texto adaptable
                     fontSize = 16.sp
                 ),
                 cursorBrush = SolidColor(PrimaryColor),

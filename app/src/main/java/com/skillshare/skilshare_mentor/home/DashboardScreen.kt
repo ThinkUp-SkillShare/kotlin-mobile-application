@@ -17,6 +17,9 @@ import com.skillshare.skilshare_mentor.groups.CreateGroupScreen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
+    userName: String,
+    userLastName: String,
+    institution: String,
     onSettingsClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     onEditProfile: () -> Unit = {},
@@ -73,6 +76,7 @@ fun DashboardScreen(
         ) {
             when (selectedTab) {
                 DashboardTab.Home -> HomeContent(
+                    userName = userName,
                     onNavigate = { newTab -> selectedTab = newTab },
                     onSettingsClick = onSettingsClick,
                     onEditProfileClick = onEditProfile
@@ -85,7 +89,11 @@ fun DashboardScreen(
                 )
                 DashboardTab.Calendar -> CalendarContent()
                 DashboardTab.Statistics -> StatisticsContent()
-                DashboardTab.Profile -> ProfileContent()
+                DashboardTab.Profile -> ProfileContent(
+                    firstName = userName,
+                    lastName = userLastName,
+                    institution = institution
+                )
             }
         }
     }

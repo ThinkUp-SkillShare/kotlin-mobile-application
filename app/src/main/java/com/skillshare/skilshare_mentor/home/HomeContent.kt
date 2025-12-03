@@ -19,12 +19,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.skillshare.skilshare_mentor.ui.theme.PrimaryColor
-import androidx.compose.ui.res.stringResource
 import com.skillshare.skilshare_mentor.R
+import com.skillshare.skilshare_mentor.ui.theme.PrimaryColor
 
 data class MenuOption(
     val title: String,
@@ -36,6 +36,7 @@ data class MenuOption(
 
 @Composable
 fun HomeContent(
+    userName: String, // ⬅️ 1. Recibimos el nombre aquí
     onNavigate: (DashboardTab) -> Unit,
     onSettingsClick: () -> Unit,
     onEditProfileClick: () -> Unit
@@ -58,7 +59,8 @@ fun HomeContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        HomeHeader(onProfileClick = onEditProfileClick)
+        // 2. Lo pasamos al Header
+        HomeHeader(userName = userName, onProfileClick = onEditProfileClick)
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -75,7 +77,10 @@ fun HomeContent(
 }
 
 @Composable
-fun HomeHeader(onProfileClick: () -> Unit) {
+fun HomeHeader(
+    userName: String, // ⬅️ 3. Recibimos el nombre
+    onProfileClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,8 +103,10 @@ fun HomeHeader(onProfileClick: () -> Unit) {
                     color = Color.White.copy(alpha = 0.8f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
+
+                // ⬇️ 4. Usamos la variable dinámica
                 Text(
-                    text = "${stringResource(R.string.role_teacher)} Sebastián",
+                    text = "${stringResource(R.string.role_teacher)} $userName",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
