@@ -21,7 +21,7 @@ interface ApiService {
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:5032/"
+    private const val BASE_URL = "https://skillshare-kotlin-backend.onrender.com/"
 
     val api: ApiService by lazy {
         Retrofit.Builder()
